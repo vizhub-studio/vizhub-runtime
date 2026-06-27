@@ -5,6 +5,8 @@
 
 A powerful, flexible runtime environment for executing code sandboxes in the browser. `@vizhub/runtime` powers [VizHub](https://vizhub.com/) and can be used to build similar interactive coding platforms.
 
+> **Latest (v4.5.1):** Fixed cross-iframe message contamination in `windowListener` — see [Changelog](#changelog).
+
 ## Overview
 
 `@vizhub/runtime` intelligently detects the appropriate runtime version based on the provided files and generates executable HTML that can be used within an iframe's `srcdoc` attribute. It handles everything from simple HTML/JS/CSS combinations to complex module bundling, dependency resolution, and cross-viz imports.
@@ -365,7 +367,8 @@ const runtime = createRuntime({
   setBuildErrorMessage?: (error: string | null) => void,
   getLatestContent?: (vizId: string) => Promise<VizContent | null>,
   resolveSlugKey?: (slugKey: string) => Promise<string | null>,
-  writeFile?: (fileName: string, content: string) => void
+  writeFile?: (fileName: string, content: string) => void,
+  handleRuntimeError?: (formattedErrorMessage: string) => void
 });
 ```
 
@@ -373,10 +376,13 @@ const runtime = createRuntime({
 
 - **iframe**: `HTMLIFrameElement` - The iframe element where the viz will be rendered
 - **worker**: `Worker` - Web Worker instance that handles code building
-- **setBuildErrorMessage**: `(error: string | null) => void` - Optional callback for handling build errors
+- **setBuildErrorMessage**: `(error: string | null) => void` - Optional callback for handling build-time errors
 - **getLatestContent**: `(vizId: string) => Promise<VizContent | null>` - Optional function to fetch viz content for cross-viz imports
 - **resolveSlugKey**: `(slugKey: string) => Promise<string | null>` - Optional function to resolve viz slugs to IDs
 - **writeFile**: `(fileName: string, content: string) => void` - Optional callback when code running in the iframe writes files
+- **handleRuntimeError**: `(formattedErrorMessage: string) => void` - Optional callback for handling runtime errors (exceptions thrown during viz execution)
+
+> **Security note (v4.5.1):** The `windowListener` inside `createRuntime` now filters messages by `event.source` to ensure it only processes messages from its own iframe. Previously, any `window.postMessage` with matching types (`runtimeError`, `runError`, `runDone`, `writeFile`) from any iframe on the page would be handled by this runtime, which could cause cross-iframe contamination when multiple runtimes are active (e.g., on an AI edit review page showing a "Before" and "After" comparison).
 
 ##### Returns
 
@@ -433,6 +439,12 @@ runtime.run({
 // Clean up when done
 runtime.cleanup();
 ```
+
+### Running in Multiple-Iframe Pages
+
+When using multiple `createRuntime` instances on the same page (e.g., a before/after comparison view), each runtime previously processed `window.postMessage` events from all iframes, not just its own. This caused runtime errors from one viz to appear as errors in an unrelated viz.
+
+As of v4.5.1, each runtime filters messages by `event.source`, so errors only display in the correct iframe.
 
 ### Building HTML Only
 
@@ -610,6 +622,20 @@ Before finalizing a PR and marking it ready for review, please ensure that:
 
 - Running `npm run preflight` passes without errors
 - The demo app is still working - run `npm run demo` and click through the green buttons to see if everything still works
+
+## Changelog
+
+### v4.5.1 — Cross-iframe message contamination fix
+
+**Fixed:** The `windowListener` in `createRuntime` now checks `event.source !== iframe.contentWindow` before processing `runDone`, `runError`, `runtimeError`, and `writeFile` messages. 
+
+**Background:** When multiple `createRuntime` instances (or a `createRuntime` plus raw srcdoc-based iframes built via `buildPreviewHtml`) coexist on the same page, all iframes call `parent.postMessage(...)` with the same message types. Without the source check, one runtime could display errors from another iframe's viz, leading to confusing error reports in the wrong view (e.g., an "After" variant's AI-generated code error showing up in the "Before" comparison panel).
+
+**Impact:** All consumers of `@vizhub/runtime` that run multiple iframes on one page benefit from this fix automatically — no code changes required.
+
+### v4.5.0 — Original release (current feature set)
+
+Supports runtime versions v1–v4 with Rollup bundling, Svelte compilation, cross-viz imports, import maps, hot reloading, and more.
 
 ## License
 

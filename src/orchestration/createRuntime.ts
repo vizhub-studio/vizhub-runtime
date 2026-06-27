@@ -182,7 +182,9 @@ export const createRuntime = ({
   worker.addEventListener("message", workerListener);
 
   // Handle messages from the iframe
+  // IMPORTANT: check event.source to only process messages from our own iframe.
   const windowListener = (event: MessageEvent) => {
+    if (event.source !== iframe.contentWindow) return;
     const data = event.data;
 
     if (
