@@ -165,6 +165,169 @@ This configuration allows the V2 runtime to properly load and expose UMD bundles
 
 V2 is ideal for more complex projects that require modular JavaScript and external dependencies that provide UMD builds. Note that the V2 runtime does not support ESM builds for external dependencies (see V4 if you need this).
 
+### How to generate bundle.js locally
+
+If you want to replicate the V2 runtime's bundling behavior locally for development or testing, you can set up your own Rollup configuration that mimics the internal build process.
+
+#### Requirements
+
+1. **package.json** with a `build` script and Rollup as a dependency
+2. **Rollup configuration** that sets up d3 and other packages as importable via browser globals
+
+#### Setup
+
+Add the following to your `package.json`:
+
+```json
+{
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "devDependencies": {
+    "rollup": "^4.50.1",
+    "sucrase": "^3.35.0"
+  }
+}
+```
+
+#### Rollup Configuration
+
+Create a `rollup.config.js` file that mimics the V2 runtime's configuration:
+
+```javascript
+import { readFileSync } from 'fs';
+
+// Helper function for JSX/TypeScript transpilation (mimics sucrasePlugin)
+async function createSucrasePlugin() {
+  const { transform } = await import('sucrase');
+  
+  return {
+    name: 'sucrase',
+    transform(code, id) {
+      if (!id.match(/\.(js|jsx|ts|tsx)$/)) return null;
+      
+      const result = transform(code, {
+        transforms: ['jsx', 'typescript'],
+        filePath: id,
+        sourceMapOptions: {
+          compiledFilename: 'bundle.js',
+        },
+        production: true,
+      });
+      
+      return {
+        code: result.code,
+        map: result.sourceMap,
+      };
+    },
+  };
+}
+
+// Parse package.json for dependencies and vizhub config
+function getGlobalsFromPackageJson() {
+  let pkg = {};
+  try {
+    pkg = JSON.parse(readFileSync('package.json', 'utf-8'));
+  } catch (e) {
+    // package.json not found or invalid
+  }
+
+  // Default globals (from vizhub-libraries and defaultGlobals)
+  const defaultGlobals = {
+    'd3': 'd3',
+    'd3-array': 'd3',
+    'd3-axis': 'd3', 
+    'd3-brush': 'd3',
+    'd3-chord': 'd3',
+    'd3-collection': 'd3',
+    'd3-color': 'd3',
+    'd3-contour': 'd3',
+    'd3-dispatch': 'd3',
+    'd3-drag': 'd3',
+    'd3-dsv': 'd3',
+    'd3-ease': 'd3',
+    'd3-fetch': 'd3',
+    'd3-force': 'd3',
+    'd3-format': 'd3',
+    'd3-geo': 'd3',
+    'd3-hierarchy': 'd3',
+    'd3-interpolate': 'd3',
+    'd3-path': 'd3',
+    'd3-polygon': 'd3',
+    'd3-quadtree': 'd3',
+    'd3-random': 'd3',
+    'd3-scale': 'd3',
+    'd3-scale-chromatic': 'd3',
+    'd3-selection': 'd3',
+    'd3-shape': 'd3',
+    'd3-tile': 'd3',
+    'd3-time': 'd3',
+    'd3-time-format': 'd3',
+    'd3-timer': 'd3',
+    'd3-transition': 'd3',
+    'd3-voronoi': 'd3',
+    'd3-zoom': 'd3',
+    'react': 'React',
+    'react-dom': 'ReactDOM',
+    'react-dropdown-browser': 'ReactDropdown',
+    'react-dropdown': 'ReactDropdown',
+    'three': 'THREE',
+    'vega': 'vega',
+    'vega-embed': 'vegaEmbed',
+    'vega-lite': 'vegaLite',
+    'vega-lite-api': 'vl',
+    'vega-tooltip': 'vegaTooltip',
+    'vega-themes': 'vegaThemes',
+    'vizhub-vega-lite-config': 'vizhubVegaLiteConfig',
+    'semiotic': 'Semiotic',
+    'viz.js': 'Viz'
+  };
+
+  // Custom globals from package.json vizhub config
+  const customGlobals = {};
+  if (pkg.vizhub?.libraries) {
+    Object.entries(pkg.vizhub.libraries).forEach(([packageName, config]) => {
+      if (config.global) {
+        customGlobals[packageName] = config.global;
+      }
+    });
+  }
+
+  return { ...defaultGlobals, ...customGlobals };
+}
+
+export default async function() {
+  return {
+    input: 'index.js',
+    plugins: [
+      await createSucrasePlugin(),
+    ],
+    output: {
+      file: 'bundle.js',
+      format: 'iife',
+      sourcemap: true,
+      globals: getGlobalsFromPackageJson(),
+    },
+    external: Object.keys(getGlobalsFromPackageJson()),
+    onwarn(warning, warn) {
+      // Suppress "treating module as external dependency" warnings
+      if (warning.code === 'UNRESOLVED_IMPORT') return;
+      warn(warning);
+    },
+  };
+}
+```
+
+#### Usage
+
+1. Set up your project files (`index.html`, `index.js`, `package.json`, etc.) as shown in the V2 Runtime example above
+2. Install dependencies: `npm install`
+3. Run the build: `npm run build`
+4. This will generate a `bundle.js` file that your `index.html` can reference
+
+The generated `bundle.js` will have the same behavior as the bundle created internally by the V2 runtime, with all your modules bundled together and external dependencies (like d3, React) available as browser globals.
+
 ## V3 Runtime
 
 The V3 runtime provides advanced module bundling with Svelte support and cross-viz imports. This runtime is automatically selected when your project contains an `index.js` file but no `index.html` file.
