@@ -29,11 +29,15 @@ import { testStackTrace } from "./testStackTrace";
 let browser: Browser;
 
 beforeAll(async () => {
-  browser = await puppeteer.launch();
+  browser = await puppeteer.launch({
+    args: ["--no-sandbox"],
+  });
 });
 
 afterAll(async () => {
-  await browser.close();
+  if (browser) {
+    await browser.close();
+  }
 });
 
 describe("VizHub Runtime v3", () => {
