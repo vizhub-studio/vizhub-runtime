@@ -194,41 +194,7 @@ Add the following to your `package.json`:
 Create a `rollup.config.js` file that mimics the V2 runtime's configuration:
 
 ```javascript
-import { readFileSync, readdirSync } from 'fs';
-
-// Helper function to read files (mimics virtualFileSystem)
-function createVirtualFileSystemPlugin() {
-  const files = {};
-  
-  // Read all files in current directory
-  const fileNames = readdirSync('.');
-  fileNames.forEach(fileName => {
-    if (fileName.match(/\.(js|jsx|ts|tsx|css|json)$/)) {
-      files[fileName] = readFileSync(fileName, 'utf-8');
-    }
-  });
-
-  return {
-    name: 'virtual-file-system',
-    resolveId(source, importer) {
-      if (source.startsWith('./') || source.startsWith('../')) {
-        const resolvedPath = source.replace(/^\.\//, '');
-        if (files[resolvedPath]) return resolvedPath;
-        
-        // Try with extensions
-        const extensions = ['.js', '.jsx', '.ts', '.tsx'];
-        for (const ext of extensions) {
-          const pathWithExt = resolvedPath + ext;
-          if (files[pathWithExt]) return pathWithExt;
-        }
-      }
-      return null;
-    },
-    load(id) {
-      return files[id] || null;
-    }
-  };
-}
+import { readFileSync } from 'fs';
 
 // Helper function for JSX/TypeScript transpilation (mimics sucrasePlugin)
 async function createSucrasePlugin() {
@@ -331,9 +297,8 @@ function getGlobalsFromPackageJson() {
 
 export default async function() {
   return {
-    input: './index.js', // or './index.jsx'
+    input: 'index.js',
     plugins: [
-      createVirtualFileSystemPlugin(),
       await createSucrasePlugin(),
     ],
     output: {
