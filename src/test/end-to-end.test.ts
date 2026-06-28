@@ -4,7 +4,6 @@ import {
   it,
   beforeAll,
   afterAll,
-  vi,
   expect,
 } from "vitest";
 import { testRuntimeWithWorker } from "./testRuntimeWithWorker";
@@ -12,19 +11,25 @@ import { testRuntimeWithWorker } from "./testRuntimeWithWorker";
 let browser: Browser | null = null;
 
 beforeAll(async () => {
-  // Assume the server is already running at http://localhost:5173/
-  browser = await puppeteer.launch();
+  browser = await puppeteer.launch({
+    args: ["--no-sandbox"],
+  });
 });
 
 afterAll(async () => {
-  // Safely close browser
   if (browser) {
     await browser.close();
   }
 });
 
+/**
+ * These end-to-end tests require the demo app to be running:
+ *   npm run demo
+ * (from the project root, in another terminal)
+ * Without it, tests will fail with ERR_CONNECTION_REFUSED.
+ */
 describe("VizHub Runtime End to End (Web Worker, iframe)", () => {
-  it("should be running `npm run demo` (start this manually in another terminal if this fails)", async () => {
+  it("should connect to demo app server (requires `npm run demo` in another terminal)", async () => {
     if (!browser) {
       throw new Error("Browser is not initialized");
     }
@@ -32,8 +37,6 @@ describe("VizHub Runtime End to End (Web Worker, iframe)", () => {
     const page = await browser.newPage();
 
     try {
-      // Requires the demo-app to be running
-      // You need to run: `npm run demo`
       await page.goto("http://localhost:3001");
 
       // Wait for runtime to be defined (up to 5 seconds)
@@ -113,10 +116,6 @@ describe("VizHub Runtime End to End (Web Worker, iframe)", () => {
               }
             `,
           },
-          // We expect the log to be "state.count = 5" because
-          // the state is already set in the first run,
-          // and if it does hot reloading properly,
-          // the state should be preserved.
           expectedLog: "state.count = 5",
         },
       ],

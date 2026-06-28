@@ -2,3 +2,4 @@ node_modules
 dist
 .aider*
 old-reference-code-from-monorepo
+.playwright-cli

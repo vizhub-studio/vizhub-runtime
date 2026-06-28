@@ -12,6 +12,7 @@ import { reactDemoV4 } from "./reactDemoV4";
 import { VizHubRuntimeFixture } from "./types";
 import { reactDemoV4TypeScript } from "./reactDemoV4TypeScript";
 import { reactDemoV2jsxExt } from "./reactDemoV2jsxExt";
+import { reactD3Combo } from "./reactD3Combo";
 import { svelteDemoV3 } from "./svelteDemoV3";
 
 export const fixtures: Array<VizHubRuntimeFixture> = [
@@ -29,4 +30,5 @@ export const fixtures: Array<VizHubRuntimeFixture> = [
   jsScriptTagTypeModules,
   reactDemoV4,
   reactDemoV4TypeScript,
+  reactD3Combo,
 ];

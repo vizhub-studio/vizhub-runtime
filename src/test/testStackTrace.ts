@@ -32,8 +32,17 @@ export async function testStackTrace({
     });
 
     // Capture page errors with their stack traces
-    page.on("pageerror", (error) => {
+    page.on("pageerror", (error: unknown) => {
       errorCaptured = true;
+
+      if (!(error instanceof Error)) {
+        DEBUG &&
+          console.log(
+            "[testStackTrace] Non-Error caught:",
+            error,
+          );
+        return;
+      }
 
       const stack = error.stack || "";
       DEBUG &&
@@ -49,9 +58,12 @@ export async function testStackTrace({
 
       for (const line of stackLines) {
         // Look for patterns like: at generateError (error.js:3:3) or at file:///path/bundle.js:20:3
-        const lineMatches = line.match(/:(\d+):/);
-        if (lineMatches && lineMatches[1]) {
-          const lineNumber = parseInt(lineMatches[1], 10);
+        const lineMatches = line.match(/:\d+:/);
+        if (lineMatches) {
+          const lineNumber = parseInt(
+            lineMatches[0].slice(1, -1),
+            10,
+          );
           DEBUG &&
             console.log(
               `[testStackTrace] Found line number in stack: ${lineNumber}`,

@@ -5,7 +5,7 @@
 
 A powerful, flexible runtime environment for executing code sandboxes in the browser. `@vizhub/runtime` powers [VizHub](https://vizhub.com/) and can be used to build similar interactive coding platforms.
 
-> **Latest (v4.5.1):** Fixed cross-iframe message contamination in `windowListener` — see [Changelog](#changelog).
+> **Latest (v4.6.0):** Upgraded all dependencies (Vite 8, Vitest 4, TS 6, Puppeteer 25, Svelte 5.56+), hardened test infrastructure, improved TypeScript config, and added a React+D3 combo demo fixture — see [Changelog](#changelog).
 
 ## Overview
 
@@ -625,9 +625,39 @@ Before finalizing a PR and marking it ready for review, please ensure that:
 
 ## Changelog
 
+### v4.6.0 — Dependency upgrades & test infrastructure hardening
+
+**Dependency upgrades:**
+
+- Vite 7 → 8
+- Vitest 3 → 4
+- TypeScript 5 → 6
+- Puppeteer 24 → 25
+- Svelte 5.38 → 5.56
+- Rollup 4.50 → 4.62
+- All other devDeps and runtime deps updated to latest
+
+**Test infrastructure hardening:**
+
+- Added `--no-sandbox` flag to all Puppeteer `launch()` calls for CI compatibility
+- Safer `browser.close()` with null guard in `afterAll` hooks
+- Type-safe stack trace parsing in `testStackTrace.ts` (error instanceof Error check, safer line number extraction)
+- Cleaned up stale comments and removed unused imports
+
+**TypeScript config:**
+
+- Added `rootDir: "./src"` for correct declaration output structure
+- Changed `moduleResolution` to `"bundler"` for alignment with Vite's resolution strategy
+
+**Demo app:**
+
+- Added new `reactD3Combo` fixture demonstrating React + D3 integration
+- Fixed Vite `optimizeDeps.include` for transitive CJS deps (sucrase, ts-interface-checker)
+- Extended `server.fs.allow` for WASM file access from @rollup/browser
+
 ### v4.5.1 — Cross-iframe message contamination fix
 
-**Fixed:** The `windowListener` in `createRuntime` now checks `event.source !== iframe.contentWindow` before processing `runDone`, `runError`, `runtimeError`, and `writeFile` messages. 
+**Fixed:** The `windowListener` in `createRuntime` now checks `event.source !== iframe.contentWindow` before processing `runDone`, `runError`, `runtimeError`, and `writeFile` messages.
 
 **Background:** When multiple `createRuntime` instances (or a `createRuntime` plus raw srcdoc-based iframes built via `buildPreviewHtml`) coexist on the same page, all iframes call `parent.postMessage(...)` with the same message types. Without the source check, one runtime could display errors from another iframe's viz, leading to confusing error reports in the wrong view (e.g., an "After" variant's AI-generated code error showing up in the "Before" comparison panel).
 
