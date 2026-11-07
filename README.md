@@ -7,6 +7,19 @@ A powerful, flexible runtime environment for executing code sandboxes in the bro
 
 > **Latest (v4.6.0):** Upgraded all dependencies (Vite 8, Vitest 4, TS 6, Puppeteer 25, Svelte 5.56+), hardened test infrastructure, improved TypeScript config, and added a React+D3 combo demo fixture — see [Changelog](#changelog).
 
+## Runtime versions and verification
+
+This repository publishes the **`@vizhub/runtime`** library, including a main entry point and a separate `./worker` entry point in [`package.json`](package.json). Runtime implementations and supporting code are organized under [`src/v2/`](src/v2/), [`src/v3/`](src/v3/), [`src/v4/`](src/v4/), and [`src/orchestration/`](src/orchestration/). Consult the version-specific code before assuming an example applies to every runtime generation.
+
+```bash
+npm ci
+npm run typecheck
+npm test
+npm run build
+```
+
+For interactive inspection, the package defines `npm run demo`, which starts the separate [`demo-app/`](demo-app/) development project. Demo and test success do **not** independently establish security for arbitrary untrusted scripts in a production host; review sandbox origins, worker behavior, resource permissions, and the consuming application's threat model.
+
 ## Overview
 
 `@vizhub/runtime` intelligently detects the appropriate runtime version based on the provided files and generates executable HTML that can be used within an iframe's `srcdoc` attribute. It handles everything from simple HTML/JS/CSS combinations to complex module bundling, dependency resolution, and cross-viz imports.
