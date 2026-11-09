@@ -57,6 +57,7 @@ export const htmlTemplate = ({
           setState((state) => state || {});
         } catch (error) {
           console.error(error);
+          window.__vizhubReportCaughtError?.(error);
           parent.postMessage({ type: 'runError', error }, "*");
         }
       }

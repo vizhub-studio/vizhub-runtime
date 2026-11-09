@@ -79,6 +79,7 @@ describe("Runtime Error Handling - All Versions", () => {
       "index.js": `export const main = (container) => {
         container.innerHTML = '<h1>Hello V3</h1>';
       };`,
+      "package.json": JSON.stringify({ dependencies: { d3: "7.0.0" } }),
     };
 
     // V3 requires vizCache, so we set it up
@@ -99,6 +100,7 @@ describe("Runtime Error Handling - All Versions", () => {
     expect(result.html).toContain("type: 'runtimeError'");
     // V3 generates its own HTML template
     expect(result.html).toContain("viz-container");
+    expect(result.html).toContain('crossorigin="anonymous"');
   });
 
   test("V4 runtime should include runtime error handlers", async () => {

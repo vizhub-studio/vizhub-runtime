@@ -43,6 +43,7 @@ export const getV4HotReloadScript = (): string => {
               parent.postMessage({ type: 'runDone' }, "*");
             } catch (error) {
               console.error('V4 Hot reload error:', error);
+              window.__vizhubReportCaughtError?.(error);
               parent.postMessage({ type: 'runError', error }, "*");
             }
             break;
