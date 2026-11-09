@@ -11,7 +11,7 @@ Stack and message lengths are bounded. Consumers must render diagnostics as text
 
 Cross-origin classic-script exceptions may be redacted by the browser. These
 are marked redacted=true; a stack cannot be recovered without correct CORS.
-V2 dependency scripts from jsDelivr and unpkg request anonymous CORS.
+V2 and V3 dependency scripts from jsDelivr and unpkg request anonymous CORS.
 Arbitrary author scripts are unchanged because forcing CORS without server
 support can prevent them from executing. Source maps cannot bypass redaction.
 
