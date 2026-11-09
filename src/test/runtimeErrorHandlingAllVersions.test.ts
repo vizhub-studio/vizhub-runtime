@@ -78,8 +78,8 @@ describe("Runtime Error Handling - All Versions", () => {
     const files: FileCollection = {
       "index.js": `export const main = (container) => {
         container.innerHTML = '<h1>Hello V3</h1>';
-        "package.json": JSON.stringify({ dependencies: { d3: "7.0.0" } }),
-    };`,
+      };`,
+      "package.json": JSON.stringify({ dependencies: { d3: "7.0.0" } }),
     };
 
     // V3 requires vizCache, so we set it up
