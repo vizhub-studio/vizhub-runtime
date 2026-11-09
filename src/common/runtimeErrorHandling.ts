@@ -47,8 +47,8 @@ export const getRuntimeErrorHandlerScript = (): string =>
   "const formatRuntimeError = " + formatRuntimeError.toString() + ";" +
   "const emit = (event, kind) => {" +
   "try {" +
-  "parent.postMessage({type:'runtimeDiagnostic',diagnostic:toRuntimeDiagnostic(event,kind)},'*');" +
-  "parent.postMessage({type:'runtimeError',formattedErrorMessage:formatRuntimeError(event,kind)},'*');" +
+  "parent.postMessage({ type: 'runtimeDiagnostic', diagnostic: toRuntimeDiagnostic(event,kind) },'*');" +
+  "parent.postMessage({ type: 'runtimeError', formattedErrorMessage: formatRuntimeError(event,kind) },'*');" +
   "} catch (_) { /* diagnostics must not break the visualization */ }" +
   "};" +
   "window.__vizhubReportCaughtError = (error) => emit(error, 'runtime');" +
