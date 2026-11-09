@@ -6,11 +6,12 @@ import {
 /** Legacy human-readable rendering; new consumers should use runtimeDiagnostic. */
 export const formatRuntimeError = (
   error: Error | ErrorEvent | PromiseRejectionEvent,
+  kindOverride?: RuntimeDiagnosticKind,
 ): string => {
-  const kind: RuntimeDiagnosticKind =
+  const kind: RuntimeDiagnosticKind = kindOverride ?? (
     error && typeof error === "object" && "reason" in error
       ? "unhandled_rejection"
-      : "runtime";
+      : "runtime");
   const diagnostic = toRuntimeDiagnostic(error, kind);
   const location = diagnostic.filename && diagnostic.line
     ? " at " + diagnostic.filename + ":" + diagnostic.line +
@@ -47,7 +48,7 @@ export const getRuntimeErrorHandlerScript = (): string =>
   "const emit = (event, kind) => {" +
   "try {" +
   "parent.postMessage({type:'runtimeDiagnostic',diagnostic:toRuntimeDiagnostic(event,kind)},'*');" +
-  "parent.postMessage({type:'runtimeError',formattedErrorMessage:formatRuntimeError(event)},'*');" +
+  "parent.postMessage({type:'runtimeError',formattedErrorMessage:formatRuntimeError(event,kind)},'*');" +
   "} catch (_) { /* diagnostics must not break the visualization */ }" +
   "};" +
   "window.__vizhubReportCaughtError = (error) => emit(error, 'runtime');" +
