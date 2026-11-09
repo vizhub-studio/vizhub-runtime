@@ -1,18 +1,14 @@
 import {
   toRuntimeDiagnostic,
+  type RuntimeDiagnostic,
   type RuntimeDiagnosticKind,
 } from "./runtimeDiagnostic";
 
-/** Legacy human-readable rendering; new consumers should use runtimeDiagnostic. */
-export const formatRuntimeError = (
-  error: Error | ErrorEvent | PromiseRejectionEvent,
-  kindOverride?: RuntimeDiagnosticKind,
+/** Converts a normalized diagnostic into the legacy string-only contract. */
+export const formatRuntimeDiagnostic = (
+  diagnostic: RuntimeDiagnostic,
 ): string => {
-  const kind: RuntimeDiagnosticKind = kindOverride ?? (
-    error && typeof error === "object" && "reason" in error
-      ? "unhandled_rejection"
-      : "runtime");
-  const diagnostic = toRuntimeDiagnostic(error, kind);
+  // This formatter is also stringified into the sandboxed iframe.
   const location = diagnostic.filename && diagnostic.line
     ? " at " + diagnostic.filename + ":" + diagnostic.line +
       (diagnostic.column ? ":" + diagnostic.column : "")
@@ -30,25 +26,38 @@ export const formatRuntimeError = (
     return diagnostic.name + ": " + diagnostic.message + location +
       (diagnostic.stack ? "\n" + diagnostic.stack : "");
   }
-  if (diagnostic.message !== "[object Object]" &&
-      diagnostic.message !== "[object ErrorEvent]") {
-    return "Error: " + diagnostic.message + location;
+  if (diagnostic.message === "[object Object]" ||
+      diagnostic.message === "[object ErrorEvent]") {
+    return "Unknown runtime error: " + diagnostic.message;
   }
-  return "Unknown runtime error: " + String(error);
+  return "Error: " + diagnostic.message + location;
+};
+
+/** Public legacy formatter retained for callers expecting a string. */
+export const formatRuntimeError = (
+  error: Error | ErrorEvent | PromiseRejectionEvent,
+  kindOverride?: RuntimeDiagnosticKind,
+): string => {
+  const kind: RuntimeDiagnosticKind = kindOverride ?? (
+    error && typeof error === "object" && "reason" in error
+      ? "unhandled_rejection"
+      : "runtime");
+  return formatRuntimeDiagnostic(toRuntimeDiagnostic(error, kind));
 };
 
 /**
- * Install before visualization code; the formatter is self-contained.
- * Keep legacy runtimeError postMessage during the consumer migration.
+ * Self-contained functions are stringified into srcdoc, not imported into it.
+ * Preserve runtimeError while consumers migrate to runtimeDiagnostic.
  */
 export const getRuntimeErrorHandlerScript = (): string =>
   "(() => {" +
   "const toRuntimeDiagnostic = " + toRuntimeDiagnostic.toString() + ";" +
-  "const formatRuntimeError = " + formatRuntimeError.toString() + ";" +
+  "const formatRuntimeDiagnostic = " + formatRuntimeDiagnostic.toString() + ";" +
   "const emit = (event, kind) => {" +
   "try {" +
-  "parent.postMessage({ type: 'runtimeDiagnostic', diagnostic: toRuntimeDiagnostic(event,kind) },'*');" +
-  "parent.postMessage({ type: 'runtimeError', formattedErrorMessage: formatRuntimeError(event,kind) },'*');" +
+  "const diagnostic = toRuntimeDiagnostic(event,kind);" +
+  "parent.postMessage({ type: 'runtimeDiagnostic', diagnostic },'*');" +
+  "parent.postMessage({ type: 'runtimeError', formattedErrorMessage: formatRuntimeDiagnostic(diagnostic) },'*');" +
   "} catch (_) { /* diagnostics must not break the visualization */ }" +
   "};" +
   "window.__vizhubReportCaughtError = (error) => emit(error, 'runtime');" +
