@@ -51,10 +51,16 @@ React or editor state.
 
 ## Try the two fixtures
 
-Serve the repository root over HTTP with any basic static server. Then open:
+Start the zero-dependency fixture server from the repository root:
 
-- `/experiments/view-state/fixtures/standalone.html?year=2020&region=CA`
-- `/experiments/view-state/fixtures/embedded-host.html?year=2020&region=CA&commit=abc`
+```bash
+node experiments/view-state/serve.mjs
+```
+
+Then open:
+
+- `http://127.0.0.1:3002/experiments/view-state/fixtures/standalone.html?year=2020&region=CA`
+- `http://127.0.0.1:3002/experiments/view-state/fixtures/embedded-host.html?year=2020&region=CA&commit=abc`
 
 Both modes import the **same** `fixtures/visualization.js`. Changing Year
 uses `replace()`, changing Region uses `push()`. Try browser Back/Forward.
