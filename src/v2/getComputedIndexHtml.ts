@@ -85,7 +85,14 @@ const injectScripts = (
       .map(([name, version]) =>
         dependencySource({ name, version }, libraries),
       )
-      .map((src) => `<script src="${src}"></script>`)
+      .map((src) => {
+        // Only enable CORS for CDNs known to return ACAO. Applying this
+        // to arbitrary author scripts could break otherwise-working vizzes.
+        const cors = /^https:\/\/(?:cdn\.jsdelivr\.net|unpkg\.com)\//.test(src)
+          ? ' crossorigin="anonymous"'
+          : "";
+        return `<script src="${src}"${cors}></script>`;
+      })
       .join("\n");
 
     html = injectBeforeClose(

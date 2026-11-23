@@ -1,3 +1,4 @@
+import type { RuntimeDiagnostic } from "../common/runtimeDiagnostic";
 // type FileCollection = Record<string, string>;
 import { FileCollection, VizId } from "@vizhub/viz-types";
 import { BuildResult } from "../build/types";
@@ -150,6 +151,12 @@ export type WindowMessage =
       type: "runError";
       error: Error;
       requestId: string;
+    }
+
+  // Structured, backward-compatible diagnostics (versioned, bounded).
+  | {
+      type: "runtimeDiagnostic";
+      diagnostic: RuntimeDiagnostic;
     }
 
   // `runtimeError` (spontaneous error from iframe)

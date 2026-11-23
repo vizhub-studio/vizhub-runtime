@@ -64,6 +64,7 @@ describe("v2 getComputedIndexHtml", () => {
       'head script[src*="d3@6.7.0"]',
     );
     expect(d3Script).not.toBeNull();
+    expect(d3Script?.getAttribute("crossorigin")).toBe("anonymous");
 
     // Check that we have the bundle.js script in the body
     const bundleScript = document.querySelector(
