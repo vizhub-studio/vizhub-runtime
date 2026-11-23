@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>View-state iframe host proof of concept</title>
+  <style>
+    body { font: 14px system-ui, sans-serif; margin: 24px; }
+    iframe { width: 100%; max-width: 520px; height: 370px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>Sandboxed iframe host</h1>
+  <p>The iframe has <code>sandbox="allow-scripts"</code> (no same-origin grant).</p>
+  <iframe id="viz-frame" sandbox="allow-scripts" title="Interactive visualization"></iframe>
+  <script type="module">
+    import { createHostBridge } from "../hostAdapter.js";
+
+    const iframe = document.querySelector("#viz-frame");
+    window.__frameLoads = 0;
+    iframe.addEventListener("load", () => { window.__frameLoads += 1; });
+
+    const bridge = createHostBridge({
+      iframe,
+      allowedKeys: ["year", "region"],
+      onConnected() { document.body.dataset.connected = "true"; },
+    });
+
+    // This bootstrap must precede visualization JavaScript. The host owns only
+    // two opt-in keys and preserves unrelated app-owned keys in its URL.
+    const params = new URLSearchParams(window.location.search);
+    const initial = new URLSearchParams();
+    for (const [key, value] of params) {
+      if (key === "year" || key === "region") initial.append(key, value);
+    }
+
+    const escaped = initial.toString().replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;").replace(/</g, "&lt;");
+    const template = await fetch("./embedded-viz.html").then((r) => r.text());
+    iframe.srcdoc = template.replace("__INITIAL_QUERY__", escaped);
+
+    window.__hostBridge = bridge;
+    window.addEventListener("pagehide", () => bridge.destroy(), { once: true });
+  </script>
+</body>
+</html>
