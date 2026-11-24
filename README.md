@@ -743,6 +743,81 @@ Creates a cache for slug resolution.
 - **initialMappings**: `Record<string, string>` - Initial slug to vizId mappings
 - **handleCacheMiss**: `(slug: string) => Promise<string>` - Function to handle cache misses
 
+## Opt-in iframe interaction bridge
+
+Hosts can recognize semantic dismissal gestures in sandboxed previews without
+an input overlay or changing sandbox permissions. This is independent of the
+V1–V4 build path and works with already-generated HTML, including worker output.
+
+```typescript
+import {
+  injectInteractionBridge,
+  createInteractionBridge,
+} from "@vizhub/runtime";
+
+const bridge = createInteractionBridge({
+  iframe,
+  onEscape: () => exitFullscreen(),
+  onEdgeSwipe: () => exitFullscreen(),
+  onDismissGesture: () => exitFullscreen(),
+});
+
+// Register before navigating the mounted iframe.
+iframe.srcdoc = injectInteractionBridge(html);
+
+// Enable only while the host wants to accept dismissal requests.
+bridge.enable({
+  edges: ["left", "right", "top", "bottom"],
+  edgeWidth: 24,
+  minSwipeDistance: 80,
+  directionRatio: 1.5,
+  escape: true,
+  twoFingerSwipe: true,
+});
+
+// On exit, without navigating or rebuilding the iframe:
+bridge.disable();
+// When the host removes the iframe:
+bridge.cleanup();
+```
+
+The bridge is inactive by default. The optional two-finger gesture is disabled
+unless requested. Distances are CSS pixels in the iframe viewport. Single-finger
+swipes start at a configured edge and move inward; two-finger swipes require
+parallel movement and reject pinches. Passive listeners preserve chart events,
+so a recognized dismissal may also have moved the chart before exit.
+
+The versioned protocol checks iframe window identity and uses a rotating session
+identifier to discard messages queued before configuration changes or loads.
+The host and child resynchronize on readiness and load. Opaque-origin srcdoc
+frames require a wildcard target origin. Untrusted iframe code can still
+synthesize protocol messages from its own window; treat every callback as an
+untrusted, low-privilege dismissal request, not authorization or proof of
+physical input. No raw key streams, pointer trajectories, or data are forwarded.
+
+This API never requests or exits fullscreen itself. The host owns presentation,
+keyboard focus, native fullscreen events, accessibility and recovery paths.
+OS-reserved gestures and browser cancellation may prevent delivery; validate on
+actual mobile devices and provide an alternative exit mechanism. Existing
+consumers need not change anything.
+
+### Interactive demo
+
+Build the package, install the demo dependencies, and run the demo server:
+
+```bash
+npm run build
+cd demo-app
+npm install
+npm run dev
+```
+
+Open `http://localhost:3001/interaction.html`. The D3 chart uses a CDN and
+supports pan and pinch zoom. Enter immersive mode, then test Escape, the four
+inward edge swipes and the optional two-finger swipe. The demo uses a fixed
+viewport overlay to demonstrate the bridge even where native fullscreen is
+unavailable.
+
 ## Development
 
 ### Setup
