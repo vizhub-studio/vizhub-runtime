@@ -40,7 +40,9 @@ export function toRuntimeDiagnostic(
       typeof (input as Error).message === "string" &&
       typeof (input as Error).name === "string");
   const location = (input: unknown): number | undefined =>
-    typeof input === "number" && Number.isInteger(input) && input > 0
+    typeof input === "number" &&
+    Number.isInteger(input) &&
+    input > 0
       ? input
       : undefined;
 
@@ -60,12 +62,16 @@ export function toRuntimeDiagnostic(
   }
 
   if (kind === "security_policy") {
-    const directive = limit(obj.violatedDirective, 120) || "Content Security Policy";
+    const directive =
+      limit(obj.violatedDirective, 120) ||
+      "Content Security Policy";
     const uri = limit(obj.blockedURI, 800);
     return {
       version: 1,
       kind,
-      message: uri ? directive + " blocked " + uri : directive + " blocked a resource",
+      message: uri
+        ? directive + " blocked " + uri
+        : directive + " blocked a resource",
       filename: limit(obj.sourceFile, 800) || undefined,
       line: location(obj.lineNumber),
       column: location(obj.columnNumber),
@@ -73,12 +79,16 @@ export function toRuntimeDiagnostic(
   }
 
   if (kind === "resource") {
-    const tag = limit(target?.tagName, 40).toLowerCase() || "resource";
+    const tag =
+      limit(target?.tagName, 40).toLowerCase() ||
+      "resource";
     const url = limit(target?.src || target?.href, 800);
     return {
       version: 1,
       kind,
-      message: url ? "Failed to load " + tag + ": " + url : "Failed to load " + tag,
+      message: url
+        ? "Failed to load " + tag + ": " + url
+        : "Failed to load " + tag,
       filename: url || undefined,
     };
   }
@@ -97,11 +107,18 @@ export function toRuntimeDiagnostic(
   const rawMessage =
     (error && limit(error.message, 2000)) ||
     limit(obj.message, 2000) ||
-    (typeof candidate === "string" ? limit(candidate, 2000) : "") ||
-    (candidateObject && limit(candidateObject.message, 2000)) ||
-    (candidate === undefined ? "Unknown error" : limit(String(candidate), 2000));
+    (typeof candidate === "string"
+      ? limit(candidate, 2000)
+      : "") ||
+    (candidateObject &&
+      limit(candidateObject.message, 2000)) ||
+    (candidate === undefined
+      ? "Unknown error"
+      : limit(String(candidate), 2000));
   const redacted =
-    kind === "runtime" && !error && /^script error\.?$/i.test(rawMessage);
+    kind === "runtime" &&
+    !error &&
+    /^script error\.?$/i.test(rawMessage);
   const message = redacted
     ? "Script error. The browser hid the exception details for a cross-origin script."
     : rawMessage;

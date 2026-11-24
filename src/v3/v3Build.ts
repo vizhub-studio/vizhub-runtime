@@ -94,9 +94,12 @@ export const v3Build = async ({
           libraries,
         );
         const indent = i > 0 ? "    " : "\n    ";
-        const cors = /^https:\/\/(?:cdn\.jsdelivr\.net|unpkg\.com)\//.test(dependencySrc)
-          ? ' crossorigin="anonymous"'
-          : "";
+        const cors =
+          /^https:\/\/(?:cdn\.jsdelivr\.net|unpkg\.com)\//.test(
+            dependencySrc,
+          )
+            ? ' crossorigin="anonymous"'
+            : "";
         return `${indent}<script src="${dependencySrc}"${cors}></script>`;
       })
       .join("");

@@ -18,7 +18,9 @@ export function createHostBridge({
   onConnected = () => {},
 } = {}) {
   if (!iframe?.contentWindow) {
-    throw new Error("A loaded or attached iframe is required");
+    throw new Error(
+      "A loaded or attached iframe is required",
+    );
   }
   if (
     !Array.isArray(allowedKeys) ||
@@ -29,7 +31,9 @@ export function createHostBridge({
         !/^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(key),
     )
   ) {
-    throw new Error("Host must specify explicit allowed query keys");
+    throw new Error(
+      "Host must specify explicit allowed query keys",
+    );
   }
 
   const keys = new Set(allowedKeys);
@@ -37,7 +41,9 @@ export function createHostBridge({
   let destroyed = false;
 
   const readManaged = () => {
-    const all = new URLSearchParams(windowObject.location.search);
+    const all = new URLSearchParams(
+      windowObject.location.search,
+    );
     const managed = new URLSearchParams();
     for (const [key, value] of all) {
       if (keys.has(key)) managed.append(key, value);
@@ -65,18 +71,23 @@ export function createHostBridge({
     if (!isProtocolMessage(data, "write")) return;
 
     const next = parseBridgeQuery(data.query, keys);
-    if (!next || (data.mode !== "push" && data.mode !== "replace")) {
+    if (
+      !next ||
+      (data.mode !== "push" && data.mode !== "replace")
+    ) {
       sendSnapshot();
       return;
     }
 
     const url = new URL(windowObject.location.href);
     for (const key of keys) url.searchParams.delete(key);
-    for (const [key, value] of next) url.searchParams.append(key, value);
+    for (const [key, value] of next)
+      url.searchParams.append(key, value);
 
     const updated = url.pathname + url.search + url.hash;
     try {
-      const method = data.mode === "push" ? "pushState" : "replaceState";
+      const method =
+        data.mode === "push" ? "pushState" : "replaceState";
       windowObject.history[method](
         windowObject.history.state,
         "",
@@ -128,7 +139,10 @@ export function createHostBridge({
       port?.close();
       port = null;
       windowObject.removeEventListener("message", onReady);
-      windowObject.removeEventListener("popstate", sendSnapshot);
+      windowObject.removeEventListener(
+        "popstate",
+        sendSnapshot,
+      );
     },
   };
 }

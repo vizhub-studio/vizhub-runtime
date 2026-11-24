@@ -11,11 +11,16 @@ const KEY_PATTERN = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
  * Returns null on invalid input instead of throwing inside message handlers.
  */
 export function parseBridgeQuery(query, allowedKeys) {
-  if (typeof query !== "string" || query.length > MAX_QUERY_LENGTH) {
+  if (
+    typeof query !== "string" ||
+    query.length > MAX_QUERY_LENGTH
+  ) {
     return null;
   }
 
-  const params = new URLSearchParams(query.startsWith("?") ? query.slice(1) : query);
+  const params = new URLSearchParams(
+    query.startsWith("?") ? query.slice(1) : query,
+  );
   let count = 0;
   for (const [key, value] of params) {
     count += 1;

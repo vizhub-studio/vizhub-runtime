@@ -20,4 +20,7 @@ export type {
 } from "./v3";
 
 export { toRuntimeDiagnostic } from "./common/runtimeDiagnostic";
-export type { RuntimeDiagnostic, RuntimeDiagnosticKind } from "./common/runtimeDiagnostic";
+export type {
+  RuntimeDiagnostic,
+  RuntimeDiagnosticKind,
+} from "./common/runtimeDiagnostic";

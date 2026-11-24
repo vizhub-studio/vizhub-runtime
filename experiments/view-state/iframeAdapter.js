@@ -20,8 +20,11 @@ export function createIframeAdapter({
     'meta[name="view-state-query"]',
   )?.content;
   let memory =
-    parseBridgeQuery(initialSearch ?? metaSearch ?? windowObject.location.search) ??
-    new URLSearchParams();
+    parseBridgeQuery(
+      initialSearch ??
+        metaSearch ??
+        windowObject.location.search,
+    ) ?? new URLSearchParams();
   const listeners = new Set();
   let port = null;
   let queuedWrite = null;
@@ -32,12 +35,16 @@ export function createIframeAdapter({
     if (!next) return;
     memory = next;
     for (const listener of listeners) {
-      listener({ params: cloneParams(memory), source: "host" });
+      listener({
+        params: cloneParams(memory),
+        source: "host",
+      });
     }
   };
 
   const onPortMessage = ({ data }) => {
-    if (destroyed || !isProtocolMessage(data, "snapshot")) return;
+    if (destroyed || !isProtocolMessage(data, "snapshot"))
+      return;
     receiveSnapshot(data.query);
   };
 
@@ -76,7 +83,11 @@ export function createIframeAdapter({
   windowObject.addEventListener("message", onConnect);
   if (windowObject.parent !== windowObject) {
     windowObject.parent.postMessage(
-      { protocol: PROTOCOL, version: PROTOCOL_VERSION, type: "ready" },
+      {
+        protocol: PROTOCOL,
+        version: PROTOCOL_VERSION,
+        type: "ready",
+      },
       "*",
     );
   }
@@ -90,7 +101,9 @@ export function createIframeAdapter({
       const query = params.toString();
       const next = parseBridgeQuery(query);
       if (!next) {
-        throw new Error("View-state URL query exceeds the bridge limits");
+        throw new Error(
+          "View-state URL query exceeds the bridge limits",
+        );
       }
       memory = next;
       const message = {
@@ -113,7 +126,10 @@ export function createIframeAdapter({
       listeners.clear();
       port?.close();
       port = null;
-      windowObject.removeEventListener("message", onConnect);
+      windowObject.removeEventListener(
+        "message",
+        onConnect,
+      );
     },
   };
 }
