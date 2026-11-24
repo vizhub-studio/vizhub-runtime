@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iframe interaction bridge demo</title>
+  <style>
+    body { font: 16px system-ui, sans-serif; margin: 1rem; }
+    #stage { display: flex; flex-direction: column; background: #172133; height: 65vh; }
+    #stage.active { position: fixed; inset: 0; width: 100%; height: 100dvh; z-index: 1; }
+    iframe { border: 0; display: block; width: 100%; height: 100%; }
+    button { font: inherit; padding: .6rem; }
+  </style>
+</head>
+<body>
+  <h1>Interaction bridge</h1>
+  <p>Enter immersive mode. Escape, inward edge swipes, or a parallel two-finger swipe exit.
+    Drag or pinch the D3 chart to explore. The same iframe stays mounted.</p>
+  <button id="enter">Enter immersive mode</button>
+  <p id="status" aria-live="polite">Ready</p>
+  <div id="stage"><iframe title="Pannable D3 chart" sandbox="allow-scripts"></iframe></div>
+  <script type="module" src="/src/interactionDemo.ts"></script>
+</body>
+</html>
