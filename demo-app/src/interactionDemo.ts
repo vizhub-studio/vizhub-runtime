@@ -1,9 +1,15 @@
-import { createInteractionBridge, injectInteractionBridge } from "@vizhub/runtime";
+import {
+  createInteractionBridge,
+  injectInteractionBridge,
+} from "@vizhub/runtime";
 
-const stage = document.querySelector<HTMLDivElement>("#stage")!;
+const stage =
+  document.querySelector<HTMLDivElement>("#stage")!;
 const iframe = stage.querySelector("iframe")!;
-const enter = document.querySelector<HTMLButtonElement>("#enter")!;
-const status = document.querySelector<HTMLParagraphElement>("#status")!;
+const enter =
+  document.querySelector<HTMLButtonElement>("#enter")!;
+const status =
+  document.querySelector<HTMLParagraphElement>("#status")!;
 let active = false;
 let previousOverflow = "";
 function exit(reason: string) {
@@ -21,7 +27,8 @@ const bridge = createInteractionBridge({
   onEdgeSwipe: (edge) => exit(edge + " edge swipe"),
   onDismissGesture: () => exit("two-finger swipe"),
 });
-iframe.srcdoc = injectInteractionBridge(`<!doctype html><html><head>
+iframe.srcdoc =
+  injectInteractionBridge(`<!doctype html><html><head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>html,body{margin:0;width:100%;height:100%;background:#172133;color:white}svg{width:100%;height:100%;touch-action:none;display:block}</style>
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
@@ -47,4 +54,8 @@ enter.addEventListener("click", () => {
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") exit("Escape");
 });
-window.addEventListener("pagehide", () => bridge.cleanup(), { once: true });
+window.addEventListener(
+  "pagehide",
+  () => bridge.cleanup(),
+  { once: true },
+);

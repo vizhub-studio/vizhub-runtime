@@ -5,7 +5,7 @@
 
 A powerful, flexible runtime environment for executing code sandboxes in the browser. `@vizhub/runtime` powers [VizHub](https://vizhub.com/) and can be used to build similar interactive coding platforms.
 
-> **Latest (v4.6.0):** Upgraded all dependencies (Vite 8, Vitest 4, TS 6, Puppeteer 25, Svelte 5.56+), hardened test infrastructure, improved TypeScript config, and added a React+D3 combo demo fixture — see [Changelog](#changelog).
+> **Latest (v4.8.0):** Added an opt-in iframe interaction bridge for semantic dismissal gestures, plus CI and an ESLint correctness baseline. v4.7.0 added structured runtime diagnostics and CORS-enabled CDN dependency loading — see [Changelog](#changelog).
 
 ## Runtime versions and verification
 
@@ -13,10 +13,13 @@ This repository publishes the **`@vizhub/runtime`** library, including a main en
 
 ```bash
 npm ci
+npx eslint --config .github/ci/eslint.config.mjs src
 npm run typecheck
 npm test
 npm run build
 ```
+
+CI runs ESLint with the correctness-focused baseline in [`.github/ci/eslint.config.mjs`](.github/ci/eslint.config.mjs) against `src/`. Formatting is checked separately with Prettier and is intentionally excluded from the lint baseline.
 
 For interactive inspection, the package defines `npm run demo`, which starts the separate [`demo-app/`](demo-app/) development project. Demo and test success do **not** independently establish security for arbitrary untrusted scripts in a production host; review sandbox origins, worker behavior, resource permissions, and the consuming application's threat model.
 
@@ -544,7 +547,8 @@ const runtime = createRuntime({
   getLatestContent?: (vizId: string) => Promise<VizContent | null>,
   resolveSlugKey?: (slugKey: string) => Promise<string | null>,
   writeFile?: (fileName: string, content: string) => void,
-  handleRuntimeError?: (formattedErrorMessage: string) => void
+  handleRuntimeError?: (formattedErrorMessage: string) => void,
+  handleRuntimeDiagnostic?: (diagnostic: RuntimeDiagnostic) => void
 });
 ```
 
@@ -557,6 +561,7 @@ const runtime = createRuntime({
 - **resolveSlugKey**: `(slugKey: string) => Promise<string | null>` - Optional function to resolve viz slugs to IDs
 - **writeFile**: `(fileName: string, content: string) => void` - Optional callback when code running in the iframe writes files
 - **handleRuntimeError**: `(formattedErrorMessage: string) => void` - Optional callback for handling runtime errors (exceptions thrown during viz execution)
+- **handleRuntimeDiagnostic**: `(diagnostic: RuntimeDiagnostic) => void` - Optional structured callback, scoped to this iframe, that receives the same runtime errors as a versioned, bounded object (see [Structured runtime diagnostics](#structured-runtime-diagnostics))
 
 > **Security note (v4.5.1):** The `windowListener` inside `createRuntime` now filters messages by `event.source` to ensure it only processes messages from its own iframe. Previously, any `window.postMessage` with matching types (`runtimeError`, `runError`, `runDone`, `writeFile`) from any iframe on the page would be handled by this runtime, which could cause cross-iframe contamination when multiple runtimes are active (e.g., on an AI edit review page showing a "Before" and "After" comparison).
 
@@ -743,6 +748,16 @@ Creates a cache for slug resolution.
 - **initialMappings**: `Record<string, string>` - Initial slug to vizId mappings
 - **handleCacheMiss**: `(slug: string) => Promise<string>` - Function to handle cache misses
 
+### Structured runtime diagnostics
+
+Iframe errors are also delivered as a `RuntimeDiagnostic` object, which hosts can consume through `handleRuntimeDiagnostic` instead of parsing the formatted message. Diagnostics are versioned (`version: 1`) and bounded, and carry a `kind` of `runtime`, `unhandled_rejection`, `resource`, or `security_policy`. Cross-origin exceptions that the browser withholds are marked `redacted: true`.
+
+```typescript
+import type { RuntimeDiagnostic } from "@vizhub/runtime";
+```
+
+Scripts loaded from known CDNs for V2 and V3 generated dependencies opt into anonymous CORS where supported, so their errors can be reported with detail. Other cross-origin scripts may still be redacted by the browser.
+
 ## Opt-in iframe interaction bridge
 
 Hosts can recognize semantic dismissal gestures in sandboxed previews without
@@ -801,6 +816,19 @@ OS-reserved gestures and browser cancellation may prevent delivery; validate on
 actual mobile devices and provide an alternative exit mechanism. Existing
 consumers need not change anything.
 
+#### injectInteractionBridge(html)
+
+Returns `html` with the bridge script injected. Use it before the iframe navigates; it does not change the document otherwise.
+
+#### createInteractionBridge(options)
+
+Returns an `InteractionBridge` with `enable(options)`, `disable()`, and `cleanup()`. Options:
+
+- **iframe**: `HTMLIFrameElement` - The iframe hosting the bridged document
+- **onEscape**, **onEdgeSwipe**, **onDismissGesture**: `(interaction: SandboxInteraction) => void` - Optional callbacks for recognized dismissal requests
+
+`enable` accepts `InteractionOptions` (`edges`, `edgeWidth`, `minSwipeDistance`, `directionRatio`, `escape`, `twoFingerSwipe`). Types `InteractionBridge`, `InteractionBridgeOptions`, `InteractionOptions`, `InteractionEdge`, and `SandboxInteraction` are exported from the package entry point.
+
 ### Interactive demo
 
 Build the package, install the demo dependencies, and run the demo server:
@@ -852,6 +880,13 @@ npx vitest run -t "should handle CSS imports"
 npm run typecheck
 ```
 
+### Formatting and Linting
+
+```bash
+npm run prettier          # formats the repository in place
+npx eslint --config .github/ci/eslint.config.mjs src
+```
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -875,6 +910,27 @@ Before finalizing a PR and marking it ready for review, please ensure that:
 - The demo app is still working - run `npm run demo` and click through the green buttons to see if everything still works
 
 ## Changelog
+
+### v4.8.0 — Interaction bridge, CI, and lint baseline
+
+**Added:**
+
+- Opt-in iframe interaction bridge: `injectInteractionBridge` and `createInteractionBridge`, for semantic Escape, edge-swipe, and optional two-finger dismissal gestures in sandboxed previews. Inactive by default; no sandbox permission changes.
+- Interactive demo at `demo-app/interaction.html`.
+- GitHub Actions CI (`.github/workflows/ci.yml`) running ESLint, typecheck, tests, and the package build.
+- ESLint correctness baseline in `.github/ci/eslint.config.mjs`.
+
+### v4.7.0 — Structured diagnostics and CORS for CDN dependencies
+
+**Added:**
+
+- Versioned, bounded `RuntimeDiagnostic` model emitted alongside legacy runtime errors, with the `handleRuntimeDiagnostic` callback on `createRuntime`.
+- Caught V3 render errors and V4 hot reload exceptions are included in diagnostics.
+
+**Fixed:**
+
+- Known CDN dependency scripts for V2 and V3 opt into anonymous CORS where supported.
+- Legacy inline error handling and CSP category reporting are preserved.
 
 ### v4.6.0 — Dependency upgrades & test infrastructure hardening
 
