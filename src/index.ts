@@ -24,3 +24,15 @@ export type {
   RuntimeDiagnostic,
   RuntimeDiagnosticKind,
 } from "./common/runtimeDiagnostic";
+
+export {
+  injectInteractionBridge,
+  createInteractionBridge,
+} from "./common/interactionBridge";
+export type {
+  InteractionBridge,
+  InteractionBridgeOptions,
+  InteractionOptions,
+  InteractionEdge,
+  SandboxInteraction,
+} from "./common/interactionBridge";
