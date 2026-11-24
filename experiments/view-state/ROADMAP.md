@@ -6,6 +6,7 @@ The experimental PR1 must remain opt-in and independently reviewable.
 ## PR1 — this experiment (`vizhub-runtime`)
 
 Isolated implementation and browser/unit tests of:
+
 - D3-style `param` getter/setter chaining and `on("change.namespace")`.
 - Atomic `replace`/`push` URL commits, Back/Forward subscriptions.
 - Browser, iframe and host adapters with no dependencies.
@@ -51,7 +52,7 @@ visitor view state. Do not conflate the two or silently write config.json.
 
 Verify HTML exported to a non-VizHub HTTPS origin can load and manipulate
 URL state without network access to VizHub. Then extend the separately planned
-`embed.vizhub.com` Worker to permit *validated public view parameters*
+`embed.vizhub.com` Worker to permit _validated public view parameters_
 in browser-facing URLs, while keeping signed compiled HTML artifact retrieval
 query-free. Preserve strict route allowlists, no cookies, revocation and opaque
 sandboxing. Do not treat production DNS/cutover as already complete.
@@ -66,6 +67,7 @@ read-only crawlers and no public unauthenticated rendering work initiation.
 ## Design review gates
 
 Do not proceed to broad integration until:
+
 1. The API is familiar to D3 users without requiring D3.
 2. Standalone exported code has no VizHub dependency.
 3. The sandbox remains `allow-scripts` without `allow-same-origin`.

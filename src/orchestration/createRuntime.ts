@@ -87,7 +87,9 @@ export const createRuntime = ({
   handleRuntimeError?: (
     formattedErrorMessage: string,
   ) => void;
-  handleRuntimeDiagnostic?: (diagnostic: RuntimeDiagnostic) => void;
+  handleRuntimeDiagnostic?: (
+    diagnostic: RuntimeDiagnostic,
+  ) => void;
 }): VizHubRuntime => {
   // Track the current state of the runtime
   let state:
@@ -205,8 +207,11 @@ export const createRuntime = ({
       }
     }
 
-    if (data?.type === "runtimeDiagnostic" && handleRuntimeDiagnostic &&
-        data.diagnostic?.version === 1) {
+    if (
+      data?.type === "runtimeDiagnostic" &&
+      handleRuntimeDiagnostic &&
+      data.diagnostic?.version === 1
+    ) {
       handleRuntimeDiagnostic(data.diagnostic);
     }
 

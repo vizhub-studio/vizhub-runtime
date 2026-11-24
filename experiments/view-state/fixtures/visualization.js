@@ -26,7 +26,10 @@ function render({ year, region }) {
   for (let i = 0; i < 8; i++) {
     const circle = document.createElementNS(ns, "circle");
     circle.setAttribute("cx", String(30 + i * 48));
-    circle.setAttribute("cy", String(155 - (i * 19 + offset + shift) % 125));
+    circle.setAttribute(
+      "cy",
+      String(155 - ((i * 19 + offset + shift) % 125)),
+    );
     circle.setAttribute("r", String(5 + (i % 3) * 2));
     circle.setAttribute("fill", "#3569ae");
     circle.setAttribute("opacity", "0.85");
@@ -42,15 +45,23 @@ const renderFromParams = (params) => {
   render({ year, region });
 };
 
-view.on("change.render", ({ params }) => renderFromParams(params));
+view.on("change.render", ({ params }) =>
+  renderFromParams(params),
+);
 renderFromParams(view.params());
 
-document.querySelector("#year").addEventListener("change", (event) => {
-  view.param("year", event.target.value).replace();
-});
+document
+  .querySelector("#year")
+  .addEventListener("change", (event) => {
+    view.param("year", event.target.value).replace();
+  });
 
-document.querySelector("#region").addEventListener("change", (event) => {
-  view.param("region", event.target.value).push();
-});
+document
+  .querySelector("#region")
+  .addEventListener("change", (event) => {
+    view.param("region", event.target.value).push();
+  });
 
-window.addEventListener("pagehide", () => view.destroy(), { once: true });
+window.addEventListener("pagehide", () => view.destroy(), {
+  once: true,
+});

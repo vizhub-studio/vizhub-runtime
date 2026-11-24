@@ -21,7 +21,7 @@ export type SvelteCompiler = (
 let compile: SvelteCompiler;
 
 const svelteURL =
-  "https://cdn.jsdelivr.net/npm/svelte@5.37.1";
+  "https://cdn.jsdelivr.net/npm/svelte@5.59.1";
 
 export const svelteCompilerUrl = `${svelteURL}/compiler/index.js`;
 

@@ -209,26 +209,26 @@ Add the following to your `package.json`:
 Create a `rollup.config.js` file that mimics the V2 runtime's configuration:
 
 ```javascript
-import { readFileSync } from 'fs';
+import { readFileSync } from "fs";
 
 // Helper function for JSX/TypeScript transpilation (mimics sucrasePlugin)
 async function createSucrasePlugin() {
-  const { transform } = await import('sucrase');
-  
+  const { transform } = await import("sucrase");
+
   return {
-    name: 'sucrase',
+    name: "sucrase",
     transform(code, id) {
       if (!id.match(/\.(js|jsx|ts|tsx)$/)) return null;
-      
+
       const result = transform(code, {
-        transforms: ['jsx', 'typescript'],
+        transforms: ["jsx", "typescript"],
         filePath: id,
         sourceMapOptions: {
-          compiledFilename: 'bundle.js',
+          compiledFilename: "bundle.js",
         },
         production: true,
       });
-      
+
       return {
         code: result.code,
         map: result.sourceMap,
@@ -241,91 +241,91 @@ async function createSucrasePlugin() {
 function getGlobalsFromPackageJson() {
   let pkg = {};
   try {
-    pkg = JSON.parse(readFileSync('package.json', 'utf-8'));
+    pkg = JSON.parse(readFileSync("package.json", "utf-8"));
   } catch (e) {
     // package.json not found or invalid
   }
 
   // Default globals (from vizhub-libraries and defaultGlobals)
   const defaultGlobals = {
-    'd3': 'd3',
-    'd3-array': 'd3',
-    'd3-axis': 'd3', 
-    'd3-brush': 'd3',
-    'd3-chord': 'd3',
-    'd3-collection': 'd3',
-    'd3-color': 'd3',
-    'd3-contour': 'd3',
-    'd3-dispatch': 'd3',
-    'd3-drag': 'd3',
-    'd3-dsv': 'd3',
-    'd3-ease': 'd3',
-    'd3-fetch': 'd3',
-    'd3-force': 'd3',
-    'd3-format': 'd3',
-    'd3-geo': 'd3',
-    'd3-hierarchy': 'd3',
-    'd3-interpolate': 'd3',
-    'd3-path': 'd3',
-    'd3-polygon': 'd3',
-    'd3-quadtree': 'd3',
-    'd3-random': 'd3',
-    'd3-scale': 'd3',
-    'd3-scale-chromatic': 'd3',
-    'd3-selection': 'd3',
-    'd3-shape': 'd3',
-    'd3-tile': 'd3',
-    'd3-time': 'd3',
-    'd3-time-format': 'd3',
-    'd3-timer': 'd3',
-    'd3-transition': 'd3',
-    'd3-voronoi': 'd3',
-    'd3-zoom': 'd3',
-    'react': 'React',
-    'react-dom': 'ReactDOM',
-    'react-dropdown-browser': 'ReactDropdown',
-    'react-dropdown': 'ReactDropdown',
-    'three': 'THREE',
-    'vega': 'vega',
-    'vega-embed': 'vegaEmbed',
-    'vega-lite': 'vegaLite',
-    'vega-lite-api': 'vl',
-    'vega-tooltip': 'vegaTooltip',
-    'vega-themes': 'vegaThemes',
-    'vizhub-vega-lite-config': 'vizhubVegaLiteConfig',
-    'semiotic': 'Semiotic',
-    'viz.js': 'Viz'
+    d3: "d3",
+    "d3-array": "d3",
+    "d3-axis": "d3",
+    "d3-brush": "d3",
+    "d3-chord": "d3",
+    "d3-collection": "d3",
+    "d3-color": "d3",
+    "d3-contour": "d3",
+    "d3-dispatch": "d3",
+    "d3-drag": "d3",
+    "d3-dsv": "d3",
+    "d3-ease": "d3",
+    "d3-fetch": "d3",
+    "d3-force": "d3",
+    "d3-format": "d3",
+    "d3-geo": "d3",
+    "d3-hierarchy": "d3",
+    "d3-interpolate": "d3",
+    "d3-path": "d3",
+    "d3-polygon": "d3",
+    "d3-quadtree": "d3",
+    "d3-random": "d3",
+    "d3-scale": "d3",
+    "d3-scale-chromatic": "d3",
+    "d3-selection": "d3",
+    "d3-shape": "d3",
+    "d3-tile": "d3",
+    "d3-time": "d3",
+    "d3-time-format": "d3",
+    "d3-timer": "d3",
+    "d3-transition": "d3",
+    "d3-voronoi": "d3",
+    "d3-zoom": "d3",
+    react: "React",
+    "react-dom": "ReactDOM",
+    "react-dropdown-browser": "ReactDropdown",
+    "react-dropdown": "ReactDropdown",
+    three: "THREE",
+    vega: "vega",
+    "vega-embed": "vegaEmbed",
+    "vega-lite": "vegaLite",
+    "vega-lite-api": "vl",
+    "vega-tooltip": "vegaTooltip",
+    "vega-themes": "vegaThemes",
+    "vizhub-vega-lite-config": "vizhubVegaLiteConfig",
+    semiotic: "Semiotic",
+    "viz.js": "Viz",
   };
 
   // Custom globals from package.json vizhub config
   const customGlobals = {};
   if (pkg.vizhub?.libraries) {
-    Object.entries(pkg.vizhub.libraries).forEach(([packageName, config]) => {
-      if (config.global) {
-        customGlobals[packageName] = config.global;
-      }
-    });
+    Object.entries(pkg.vizhub.libraries).forEach(
+      ([packageName, config]) => {
+        if (config.global) {
+          customGlobals[packageName] = config.global;
+        }
+      },
+    );
   }
 
   return { ...defaultGlobals, ...customGlobals };
 }
 
-export default async function() {
+export default async function () {
   return {
-    input: 'index.js',
-    plugins: [
-      await createSucrasePlugin(),
-    ],
+    input: "index.js",
+    plugins: [await createSucrasePlugin()],
     output: {
-      file: 'bundle.js',
-      format: 'iife',
+      file: "bundle.js",
+      format: "iife",
       sourcemap: true,
       globals: getGlobalsFromPackageJson(),
     },
     external: Object.keys(getGlobalsFromPackageJson()),
     onwarn(warning, warn) {
       // Suppress "treating module as external dependency" warnings
-      if (warning.code === 'UNRESOLVED_IMPORT') return;
+      if (warning.code === "UNRESOLVED_IMPORT") return;
       warn(warning);
     },
   };

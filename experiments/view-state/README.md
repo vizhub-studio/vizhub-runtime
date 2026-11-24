@@ -19,13 +19,15 @@ no D3 or `d3-dispatch` dependency:
 ```js
 import { createViewState } from "./createViewState.js";
 
-const view = createViewState()
-  .on("change.render", ({ params }) => {
+const view = createViewState().on(
+  "change.render",
+  ({ params }) => {
     render({
       year: +(params.get("year") ?? 2024),
       region: params.get("region") ?? "US",
     });
-  });
+  },
+);
 
 // Initial render is explicit; .on() does not replay state.
 renderFromParams(view.params());

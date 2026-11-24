@@ -5,9 +5,13 @@ import { cloneParams } from "./protocol.js";
  * In opaque-origin sandboxes where History API writes are denied, state remains
  * usable in memory. An optional iframe adapter enables shareable parent URLs.
  */
-export function createBrowserAdapter({ windowObject = window } = {}) {
+export function createBrowserAdapter({
+  windowObject = window,
+} = {}) {
   const listeners = new Set();
-  let memory = new URLSearchParams(windowObject.location.search);
+  let memory = new URLSearchParams(
+    windowObject.location.search,
+  );
   let historyWritable = true;
   let destroyed = false;
 
@@ -20,9 +24,14 @@ export function createBrowserAdapter({ windowObject = window } = {}) {
 
   const onPopState = () => {
     if (destroyed) return;
-    memory = new URLSearchParams(windowObject.location.search);
+    memory = new URLSearchParams(
+      windowObject.location.search,
+    );
     for (const listener of listeners) {
-      listener({ params: cloneParams(memory), source: "history" });
+      listener({
+        params: cloneParams(memory),
+        source: "history",
+      });
     }
   };
 
@@ -37,12 +46,18 @@ export function createBrowserAdapter({ windowObject = window } = {}) {
 
       const { pathname, hash } = windowObject.location;
       const query = memory.toString();
-      const url = pathname + (query ? "?" + query : "") + hash;
+      const url =
+        pathname + (query ? "?" + query : "") + hash;
 
       try {
-        const method = mode === "push" ? "pushState" : "replaceState";
+        const method =
+          mode === "push" ? "pushState" : "replaceState";
         // Preserve any host/framework state in the current history entry.
-        windowObject.history[method](windowObject.history.state, "", url);
+        windowObject.history[method](
+          windowObject.history.state,
+          "",
+          url,
+        );
       } catch {
         // Sandboxed about:srcdoc documents can have opaque origins.
         historyWritable = false;
@@ -56,7 +71,10 @@ export function createBrowserAdapter({ windowObject = window } = {}) {
       if (destroyed) return;
       destroyed = true;
       listeners.clear();
-      windowObject.removeEventListener("popstate", onPopState);
+      windowObject.removeEventListener(
+        "popstate",
+        onPopState,
+      );
     },
   };
 }

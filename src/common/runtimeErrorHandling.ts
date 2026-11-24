@@ -9,25 +9,43 @@ export const formatRuntimeDiagnostic = (
   diagnostic: RuntimeDiagnostic,
 ): string => {
   // This formatter is also stringified into the sandboxed iframe.
-  const location = diagnostic.filename && diagnostic.line
-    ? " at " + diagnostic.filename + ":" + diagnostic.line +
-      (diagnostic.column ? ":" + diagnostic.column : "")
-    : "";
+  const location =
+    diagnostic.filename && diagnostic.line
+      ? " at " +
+        diagnostic.filename +
+        ":" +
+        diagnostic.line +
+        (diagnostic.column ? ":" + diagnostic.column : "")
+      : "";
   if (diagnostic.kind === "unhandled_rejection") {
     return diagnostic.name
-      ? "Unhandled Promise Rejection - " + diagnostic.name + ": " +
-          diagnostic.message + (diagnostic.stack ? "\n" + diagnostic.stack : "")
-      : "Unhandled Promise Rejection: " + diagnostic.message;
+      ? "Unhandled Promise Rejection - " +
+          diagnostic.name +
+          ": " +
+          diagnostic.message +
+          (diagnostic.stack ? "\n" + diagnostic.stack : "")
+      : "Unhandled Promise Rejection: " +
+          diagnostic.message;
   }
-  if (diagnostic.kind === "resource" || diagnostic.kind === "security_policy") {
+  if (
+    diagnostic.kind === "resource" ||
+    diagnostic.kind === "security_policy"
+  ) {
     return diagnostic.message;
   }
   if (diagnostic.name) {
-    return diagnostic.name + ": " + diagnostic.message + location +
-      (diagnostic.stack ? "\n" + diagnostic.stack : "");
+    return (
+      diagnostic.name +
+      ": " +
+      diagnostic.message +
+      location +
+      (diagnostic.stack ? "\n" + diagnostic.stack : "")
+    );
   }
-  if (diagnostic.message === "[object Object]" ||
-      diagnostic.message === "[object ErrorEvent]") {
+  if (
+    diagnostic.message === "[object Object]" ||
+    diagnostic.message === "[object ErrorEvent]"
+  ) {
     return "Unknown runtime error: " + diagnostic.message;
   }
   return "Error: " + diagnostic.message + location;
@@ -38,11 +56,14 @@ export const formatRuntimeError = (
   error: Error | ErrorEvent | PromiseRejectionEvent,
   kindOverride?: RuntimeDiagnosticKind,
 ): string => {
-  const kind: RuntimeDiagnosticKind = kindOverride ?? (
-    error && typeof error === "object" && "reason" in error
+  const kind: RuntimeDiagnosticKind =
+    kindOverride ??
+    (error && typeof error === "object" && "reason" in error
       ? "unhandled_rejection"
       : "runtime");
-  return formatRuntimeDiagnostic(toRuntimeDiagnostic(error, kind));
+  return formatRuntimeDiagnostic(
+    toRuntimeDiagnostic(error, kind),
+  );
 };
 
 /**
@@ -51,8 +72,12 @@ export const formatRuntimeError = (
  */
 export const getRuntimeErrorHandlerScript = (): string =>
   "(() => {" +
-  "const toRuntimeDiagnostic = " + toRuntimeDiagnostic.toString() + ";" +
-  "const formatRuntimeDiagnostic = " + formatRuntimeDiagnostic.toString() + ";" +
+  "const toRuntimeDiagnostic = " +
+  toRuntimeDiagnostic.toString() +
+  ";" +
+  "const formatRuntimeDiagnostic = " +
+  formatRuntimeDiagnostic.toString() +
+  ";" +
   "const emit = (event, kind) => {" +
   "try {" +
   "const diagnostic = toRuntimeDiagnostic(event,kind);" +

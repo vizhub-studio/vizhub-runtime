@@ -1,30 +1,62 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Standalone view-state proof of concept</title>
-  <style>
-    body { font: 14px system-ui, sans-serif; padding: 16px; margin: 0; }
-    label { margin-right: 16px; }
-    select { margin-left: 4px; }
-    svg { display: block; width: min(100%, 430px); margin-top: 12px; background: #f2f5f9; }
-    output { display: block; margin-top: 12px; }
-  </style>
-</head>
-<body>
-  <h1>Portable visualization state</h1>
-  <label>Year <select id="year">
-    <option value="2020">2020</option>
-    <option value="2024">2024</option>
-  </select></label>
-  <label>Region <select id="region">
-    <option value="US">US</option>
-    <option value="CA">CA</option>
-    <option value="NY">NY</option>
-  </select></label>
-  <svg id="chart" viewBox="0 0 430 190" role="img" aria-label="Example scatterplot"></svg>
-  <output id="selection"></output>
-  <script type="module" src="./visualization.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1"
+    />
+    <title>Standalone view-state proof of concept</title>
+    <style>
+      body {
+        font:
+          14px system-ui,
+          sans-serif;
+        padding: 16px;
+        margin: 0;
+      }
+      label {
+        margin-right: 16px;
+      }
+      select {
+        margin-left: 4px;
+      }
+      svg {
+        display: block;
+        width: min(100%, 430px);
+        margin-top: 12px;
+        background: #f2f5f9;
+      }
+      output {
+        display: block;
+        margin-top: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Portable visualization state</h1>
+    <label
+      >Year
+      <select id="year">
+        <option value="2020">2020</option>
+        <option value="2024">2024</option>
+      </select></label
+    >
+    <label
+      >Region
+      <select id="region">
+        <option value="US">US</option>
+        <option value="CA">CA</option>
+        <option value="NY">NY</option>
+      </select></label
+    >
+    <svg
+      id="chart"
+      viewBox="0 0 430 190"
+      role="img"
+      aria-label="Example scatterplot"
+    ></svg>
+    <output id="selection"></output>
+    <script type="module" src="./visualization.js"></script>
+  </body>
 </html>
