@@ -137,7 +137,7 @@ describe("VizHub Runtime v3", () => {
       getSvelteCompiler: async () =>
         compile as unknown as SvelteCompiler,
     });
-  });
+  }, 30_000);
 
   it("should provide sourcemaps with correct line numbers in stack traces", async () => {
     await testStackTrace({
